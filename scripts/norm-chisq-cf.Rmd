@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+df <- 
+  tibble(x = seq(from = -5, to = +5, length.out = 100)) %>% 
+  mutate(
+    d_norm = dnorm(x),
+    d_chisq = dchisq(x, 1)
+  ) %>% 
+  pivot_longer(
+    cols = contains("d_"),
+    names_sep = "_",
+    names_to = c(".value", "var")
+  )
+
+df
+```
+
+```{r}
+df %>% 
+  mutate(
+    var = case_when(
+      var == "norm" ~ "Normal",
+      var == "chisq" ~ "Chi squared",
+      TRUE ~ var
+    )
+  ) %>% 
+  
+  ggplot(aes(x, d, color = var)) +
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  geom_line() +
+  
+  scale_x_continuous(breaks = c(-2, -1, 0, +1, +2, +3, +4)) +
+  scale_color_discrete(name = "Distribution") +
+  rzdr::theme_common() +
+  theme(
+    legend.position = "bottom",
+    panel.grid.minor.x = element_blank()
+  ) +
+  coord_cartesian(xlim = c(-2.5, +5)) +
+  labs(
+    x = "Variable",
+    y = "Density"
+  )
+ggsave("../images/norm-chisq.png")
+```
+
+Let's check the exact difference at the value one:
+
+```{r}
+dnorm(1)
+dchisq(1, 1)
+```
+
+The values appear to be identical.
